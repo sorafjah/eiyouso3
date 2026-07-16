@@ -214,7 +214,7 @@ const CATS = {
 
 const SPAWN_POS = new THREE.Vector3(0, 1.0, 3.0);
 const DRAG_BOUNDS = {xMin:-6.4, xMax:6.4, zMin:-4.3, zMax:4.3};
-const ZONE = {halfX:1.65, halfZ:1.35};
+const ZONE = {halfX:1.9, halfZ:2.3};
 
 function shuffle(arr){
   const a = arr.slice();
@@ -535,6 +535,19 @@ canvas.addEventListener('pointermove', (e)=>{
   if(!pt) return;
   currentItem.group.position.x = THREE.MathUtils.clamp(pt.x, DRAG_BOUNDS.xMin, DRAG_BOUNDS.xMax);
   currentItem.group.position.z = THREE.MathUtils.clamp(pt.z, DRAG_BOUNDS.zMin, DRAG_BOUNDS.zMax);
+
+  // 箱の上に浮かせたら、指を離さなくてもその場で判定する(ゆるい当たり判定)
+  const key = findBoxAt(currentItem.group.position.x, currentItem.group.position.z);
+  if(key){
+    currentItem.dragging = false;
+    currentItem.group.scale.setScalar(1.0);
+    try{ canvas.releasePointerCapture(e.pointerId); }catch(err){}
+    if(key === currentItem.data.cat){
+      correctDrop(key);
+    } else {
+      wrongDrop();
+    }
+  }
 });
 function endDrag(e){
   if(!currentItem || !currentItem.dragging) return;
